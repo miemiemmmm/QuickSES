@@ -56,6 +56,9 @@ SOFTWARE.
 #include <thrust/device_ptr.h>
 #include <thrust/sequence.h>
 #include <thrust/binary_search.h>
+#include <thrust/sort.h>
+#include <thrust/unique.h>
+#include <thrust/count.h>
 
 using namespace std;
 
@@ -66,7 +69,17 @@ float gridResolutionSES = 0.5f;
 int laplacianSmoothSteps = 1;
 string outputFilePath = "output.obj";
 string inputFilePath = "";
-
+std::map<char, float> radiusDic;
+void initRadiusDic() {
+    float factor = 1.0f;
+    radiusDic['O'] = 1.52f * factor;
+    radiusDic['C'] = 1.70f * factor;
+    radiusDic['N'] = 1.55f * factor;
+    radiusDic['H'] = 1.20f * factor;
+    radiusDic['S'] = 2.27f * factor;
+    radiusDic['P'] = 1.80f * factor;
+    radiusDic['X'] = 1.40f * factor;
+}
 
 
 unsigned int getMinMax(chain *C, float3 *minVal, float3 *maxVal, float *maxAtom) {
@@ -238,7 +251,6 @@ float4 *getArrayAtomPosRad(float3 *positions, float *radii, unsigned int N) {
     return result;
 }
 
-
 float computeMaxDist(float3 minVal, float3 maxVal, float maxAtomRad) {
     return std::max(maxVal.x - minVal.x, std::max(maxVal.y - minVal.y, maxVal.z - minVal.z)) + (2 * maxAtomRad) + (4 * probeRadius);
 }
@@ -256,7 +268,6 @@ void writeToObj(const string &fileName, const vector<int> &meshTriSizes, const v
         exit(-1);
     }
     for (int m = 0; m < meshTriSizes.size(); m++) {
-
         for (int i = 0; i < meshVertSizes[m]; i++) {
             float3 vert = Allvertices[m][i];
             fprintf(fptr, "v %.3f %.3f %.3f\n", vert.x, vert.y, vert.z);
@@ -283,6 +294,45 @@ void writeToObj(const string &fileName, const vector<int> &meshTriSizes, const v
 
 }
 
+void writeToPly(const string &fileName, std::vector<MeshData> meshes) {
+  FILE *fptr;
+  if ((fptr = fopen(fileName.c_str(), "w")) == NULL) {
+    fprintf(stderr, "Failed to open output file\n");
+    exit(-1);
+  }
+  fprintf(fptr, "ply\n");
+  fprintf(fptr, "format ascii 1.0\n");
+  fprintf(fptr, "comment author: Yang Zhang (y.zhang@bioc.uzh.ch)\n");
+  fprintf(fptr, "element vertex %d\n", meshes[0].NVertices);
+  fprintf(fptr, "property float x\n");
+  fprintf(fptr, "property float y\n");
+  fprintf(fptr, "property float z\n");
+  fprintf(fptr, "element face %d\n", meshes[0].NTriangles);
+//  fprintf(fptr, "property list uchar int vertex_index\n");
+  fprintf(fptr, "property list uchar int vertex_indices\n");
+
+  fprintf(fptr, "end_header\n");
+  unsigned int cumulVert = 0;
+  for (int m = 0; m < meshes.size(); m++) {
+    MeshData mesh = meshes[m];
+//    smoothMeshLaplacian(2, mesh);
+    for (int i = 0; i < mesh.NVertices; i++) {
+      float3 vert = mesh.vertices[i];
+      fprintf(fptr, "%.3f %.3f %.3f\n", vert.x, vert.y, vert.z);
+    }
+  }
+  fprintf(fptr, "\n");
+  for (int m = 0; m < meshes.size(); m++) {
+    MeshData mesh = meshes[m];
+
+    for (int i = 0; i < mesh.NTriangles; i++) {
+      fprintf(fptr, "3 %d %d %d\n", cumulVert + mesh.triangles[i].y, cumulVert + mesh.triangles[i].x, cumulVert + mesh.triangles[i].z);
+    }
+    cumulVert += mesh.NVertices;
+  }
+
+  fclose(fptr);
+}
 
 void writeToObj(const string &fileName, const MeshData &mesh) {
 #if MEASURETIME
@@ -310,6 +360,7 @@ void writeToObj(const string &fileName, const MeshData &mesh) {
     std::cerr << "Time for writting " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
 #endif
 }
+
 void writeToObj(const string &fileName, std::vector<MeshData> meshes) {
 
 
@@ -884,9 +935,7 @@ int main(int argc, const char * argv[]) {
 
     for (int chainId = 0; chainId < P->size; chainId++) {
         C = &P->chains[chainId];
-
         A = &C->residues[0].atoms[0];
-
         while (A != NULL) {
             float3 coords = A->coor;
             atomPos.push_back(coords);
@@ -908,9 +957,26 @@ int main(int argc, const char * argv[]) {
 
 
     //Write to OBJ
-    writeToObj(outputFilePath, resultMeshes);
+//    writeToObj(outputFilePath, resultMeshes);
+    writeToPly(outputFilePath, resultMeshes);
 
     freePDB(P);
 
     return 0;
 }
+
+std::vector<MeshData> get_mesh_by_xyzr(float *ptr, int N, int M){
+  std::vector<float3> atomPos;
+  std::vector<float> atomRadii;
+  for (int i = 0; i < N; i++){
+    atomPos.push_back(make_float3(ptr[i*M], ptr[i*M+1], ptr[i*M+2]));
+//    atomPos.push_back(make_float3());
+//    atomPos.push_back(make_float3(ptr[i*M+2]));
+//                      , ptr[i*M+1], ptr[i*M+2]));
+    atomRadii.push_back(ptr[i*M+3]);
+  }
+  std::vector<MeshData> resultMeshes = computeSlicedSES(&atomPos[0], &atomRadii[0], N, gridResolutionSES, laplacianSmoothSteps);
+  return resultMeshes;
+}
+
+// make clean && make && ./QuickSES -i 4kng.pdb -o test.obj

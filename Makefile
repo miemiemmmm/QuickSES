@@ -1,6 +1,6 @@
 NVCC=nvcc
 CC=nvcc
-NVCCFLAGS=-use_fast_math -O3
+NVCCFLAGS=-use_fast_math -O3 --compiler-options '-fPIC'
 # Modify this to change the target architecture
 #NVCCFLAGS += -gencode=arch=compute_50,code=sm_50 \
 #             -gencode=arch=compute_50,code=compute_50 \
@@ -11,7 +11,7 @@ NVCCFLAGS=-use_fast_math -O3
 #             -gencode=arch=compute_75,code=sm_75 \
 #             -gencode=arch=compute_75,code=compute_75
 
-CFLAGS=-O3
+CFLAGS=-O3 --compiler-options '-fPIC'
 
 QuickSES: CudaSurf.o cpdb/cpdb.o cpdb/utils.o SmoothMesh.o
 	$(CC) -o QuickSES $(CFLAGS) cpdb/cpdb.o cpdb/utils.o SmoothMesh.o CudaSurf.o
