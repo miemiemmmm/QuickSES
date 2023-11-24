@@ -2,12 +2,13 @@
 #include <fstream>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <cpdb/cpdb.h>
 #include <map>
 
 #include "cuda_runtime.h"
 #include "CudaSurf.h"
 #include "ObjFormats.h"
-#include <cpdb/cpdb.h>
+
 
 namespace py = pybind11;
 

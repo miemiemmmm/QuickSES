@@ -1,5 +1,7 @@
 # SiESTA
 
+<img src="SiEST-Surf_LOGO.png">
+
 This tool utilizes CUDA for GPU-based computation of molecular Solvent Excluded Surface meshes. 
 It features a 3D uniform grid for constant-time access to atom neighbors and incorporates a CUDA-implemented Marching Cubes algorithm, as well as a GPU-based method for welding mesh vertices.
 
@@ -11,6 +13,30 @@ This repository is developed based on [QuickSES](https://github.com/nezix/QuickS
 [//]: # ($> wget https://files.rcsb.org/download/1KX2.pdb)
 [//]: # ($> ./QuickSES -i 1KX2.pdb -o 1KX2_Surface.obj -v 0.2)
 [//]: # (```)
+
+
+## Installation
+To successfully compile SiESTA, nvcc is required from the NVIDIA CUDA toolkit.  
+
+This will call  to create a QuickSES executable and its python API.
+
+```bash
+$> git clone https://github.com/miemiemmmm/SiESTA.git
+$> cd SiESTA
+$> make clean && make QuickSES siesta.so 
+```
+
+
+## Quick test
+```bash
+$> wget https://files.rcsb.org/download/4bso.pdb
+$> python3 -c """import siesta; 
+xyzr = siesta.pdb_to_xyzr('4bso.pdb'); 
+print('Convert PDB to XYZR: ', xyzr.shape);
+ply_str = siesta.pdb_to_ply_string('4bso.pdb'); 
+print('Convert PDB to PLY string: ', ply_str);
+"""
+```
 
 ## Usage
 
@@ -26,16 +52,7 @@ The size of the slice that defines how much memory QuickSES uses can be changed 
 
 The tool can also be used as a library by sending an array of positions and an array of radius per atom (see API_* functions).
 
-## Installation
-To successfully compile SiESTA, nvcc is required from the NVIDIA CUDA toolkit.  
 
-This will call  to create a QuickSES executable and its python API.
-
-```bash
-$> git clone https://github.com/miemiemmmm/QuickSES.git
-$> cd QuickSES
-$> bash install.sh 
-```
 
 ## Useful links
 [Original QuickSES repository](https://github.com/nezix/QuickSES)

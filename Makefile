@@ -16,9 +16,9 @@ CC=g++
 CFLAGS=-O3 -fPIC
 PYFLAGS=-I/home/yzhang/mamba/envs/mlenv/include/python3.9 -I.
 
-
+# Using NVCC with pybind11 causes implicit failure
 QuickSES: CudaSurf.o cpdb/cpdb.o cpdb/utils.o SmoothMesh.o
-	$(NVCC) -o QuickSES $(NVCCFLAGS) cpdb/cpdb.o cpdb/utils.o SmoothMesh.o CudaSurf.o
+	$(CC) -o QuickSES cpdb/cpdb.o cpdb/utils.o SmoothMesh.o CudaSurf.o $(CFLAGS) $(CUDARUNTIME)
 
 siesta.so: CudaSurf.o cpdb/cpdb.o cpdb/utils.o ObjFormats.o SmoothMesh.o
 	$(CC) -shared -fPIC -o siesta.so SiESTA.cpp cpdb/cpdb.o cpdb/utils.o SmoothMesh.o CudaSurf.o ObjFormats.o $(CFLAGS) $(CUDARUNTIME) $(PYFLAGS)
