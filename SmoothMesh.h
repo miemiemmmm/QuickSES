@@ -21,6 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#ifndef SMOOTHMESH_H
+#define SMOOTHMESH_H
+
 #include <vector>
 #include "cuda_runtime.h"
 
@@ -42,3 +45,4 @@ std::vector<std::vector<int>> getNeighboorsVertices(const MeshData &mesh);
 void smoothMeshLaplacian(int times, float3 *&vertices, int3 *&triangles, unsigned int vertNum, unsigned int triNum);
 void smoothMeshLaplacian(int times, MeshData &mesh);
 
+#endif // SMOOTHMESH_H

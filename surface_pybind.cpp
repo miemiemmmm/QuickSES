@@ -10,18 +10,31 @@
 
 namespace py = pybind11;
 
-py::tuple get_surf(py::array_t<float> xyzr, float grid_resolution) {
+std::string ply_from_xyzr(){
+
+}
+
+std::string obj_from_xyzr(){
+
+}
+
+
+py::tuple get_surf(py::array_t<float> xyzr, float grid_size, int smooth_step, int slice_number){
   py::buffer_info buf = xyzr.request();
   float *ptr = (float *) buf.ptr;
   int N = buf.shape[0];
   int M = buf.shape[1];
 
+  // Test if the input is correctly passed
   for (int i = 0; i < N; i++){
     std::cout << ptr[i*M] << " " << ptr[i*M+1] << " " << ptr[i*M+2] << " " << ptr[i*M+3] << std::endl;
   }
-  std::cout << "CPP: number of atoms: " << N << " Number of dims: " << M << "grid_resolution: " << grid_resolution << std::endl;
+  std::cout << "CPP: number of atoms: " << N << " Number of dims: " << M << "grid_size: " << grid_size << std::endl;
+  std::cout << "slice number" << slice_number << "smooth_step" << smooth_step << std::endl;
+  ////////////////////////////
 
-  std::vector<MeshData> resultMeshes = get_mesh_by_xyzr(ptr, N, M);
+  // Return vector of MeshData
+  std::vector<MeshData> resultMeshes = get_mesh_by_xyzr(ptr, N, M, grid_size, smooth_step, slice_number);
 
   std::vector<float> vertices_vec;
   std::vector<int> faces_vec;
@@ -52,7 +65,9 @@ py::tuple get_surf(py::array_t<float> xyzr, float grid_resolution) {
 PYBIND11_MODULE(surface, m) {
   m.def("get_surf", &get_surf,
     py::arg("xyzr"),
-    py::arg("grid_resolution") = 0.35,
+    py::arg("grid_size") = 0.25,
+    py::arg("smooth_step") = 10,
+    py::arg("slice_number") = 800,
     "Compute cosine similarity between two vectors"
   );
 }
