@@ -1,2 +1,14 @@
-recursive-include nearl *.py *.so
-include QuickSES
+recursive-include siesta *.py
+recursive-include cpdb *
+recursive-include pybind11 *
+recursive-include siesta scripts/*
+
+include README.md LICENSE
+
+include pyproject.toml MANIFEST.in setup.py
+include *.py
+
+include Makefile
+include *.cpp *.h *.cu *.hxx
+
+

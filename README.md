@@ -1,6 +1,10 @@
-# SiESTA
+# SiESTA-Surf
 
-<img src="SiEST-Surf_LOGO.png">
+<img src="SiEST-Surf_LOGO.png" style="">
+
+<h1 style="color:red">
+NOTE: This repository is still under construction. Please use it with caution.
+</h1>
 
 This tool utilizes CUDA for GPU-based computation of molecular Solvent Excluded Surface meshes. 
 It features a 3D uniform grid for constant-time access to atom neighbors and incorporates a CUDA-implemented Marching Cubes algorithm, as well as a GPU-based method for welding mesh vertices.
@@ -20,6 +24,18 @@ To successfully compile SiESTA, nvcc is required from the NVIDIA CUDA toolkit.
 
 This will call  to create a QuickSES executable and its python API.
 
+### PyPI
+```bash
+$> pip install siesta-surf
+```
+
+### Source distribution
+```bash
+$> wget http://www.placeholder/for/url/to/siesta-surf-0.0.1.tar.gz
+$> pip install -v siesta-surf-0.0.1.tar.gz 
+```
+
+### Manual installation
 ```bash
 $> git clone https://github.com/miemiemmmm/SiESTA.git
 $> cd SiESTA
