@@ -1,9 +1,7 @@
-import subprocess
-import os
-import argparse
-# find Get the QuickSES executable in the main directory
+import subprocess, os, argparse
 
-def parse():
+
+def parse_for_quickses():
 	# Parse the command line arguments for QuickSES executable
 	parser = argparse.ArgumentParser(description="QuickSES command line tool")
 	parser.add_argument("-i", "--input", help="Input PDB file")
@@ -11,24 +9,20 @@ def parse():
 	parser.add_argument("-l", "--laplacian", default=1, type=int, help="Times to run Laplacian smoothing step")
 	parser.add_argument("-v", "--voxel", default=0.5, type=float, help="Voxel size in Angstrom. Defines the quality of the mesh")
 	parser.add_argument("-s", "--slice", default=300, type=int, help="Size of the sub-grid. Defines the quantity of GPU memory needed")
- 	parser.add_argument("-h", "--help", default=false, type=bool,  help="Show help message")
-	args = parser.parse_args()
-	return args
+	parser.add_argument("-d", "--debug", default=False, type=bool, help="Print debug information")
+	return parser.parse_args()
 
-def run_quickses():
+
+def quickses_runner():
+	# find Get the QuickSES executable in the main directory
 	file_dir = os.path.dirname(os.path.realpath(__file__))
-	QuickSES = os.path.abspath(file_dir + "/../QuickSES")
-	if not os.path.exists(QuickSES):
+	quickses_bin = os.path.abspath(file_dir + "/../QuickSES")
+	if not os.path.exists(quickses_bin):
 		raise Exception("QuickSES executable not found")
 
-	args = parse()
-	if args.help:
-		msg = "Usage: \n QuickSES -i input.pdb -o output.obj -l 1 -v 0.5 -s 300 \n -i input.pdb: Input PDB file \n -o output.obj: Output OBJ mesh file \n -l 1: Times to run Laplacian smoothing step \n -v 0.5: Voxel size in Angstrom. Defines the quality of the mesh \n -s 300: Size of the sub-grid. Defines the quantity of GPU memory needed"
-		print(msg)
-		return 0
-
-	print(args)
-	command = [QuickSES]
+	# Parse the command line arguments for QuickSES executable
+	args = parse_for_quickses()
+	command = [quickses_bin]
 	if args.input:
 		command += ["-i", args.input]
 	else:
@@ -43,10 +37,10 @@ def run_quickses():
 		command += ["-v", str(args.voxel)]
 	if args.slice:
 		command += ["-s", str(args.slice)]
-	print("Final command: ", " ".join(command))
+	if args.debug: print("Final command: ", " ".join(command))
 
+	# Run QuickSES
 	subprocess.run(command)
-	print("###########################")
-	print("QuickSES finished successfully")
+	if args.debug: print("############# QuickSES finished successfully ##############")
 	return 0
 

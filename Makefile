@@ -48,4 +48,6 @@ test:
 	ret_str = siesta.pdb_to_ply_string('4bso.pdb'); print(ret_str); \
 	"""
 
-#nvcc --shared CudaSurf.cu cpdb/*.cpp -Icpdb/ SmoothMesh.cpp -o QuickSES.dll -use_fast_math -O3 --compiler-options "-fPIC"
+install:
+	python -m build && pip install -v dist/siesta-surf-0.0.1.tar.gz
+

@@ -20,4 +20,5 @@ license = {text = "MIT"}
 include-package-data = true
 
 [project.entry-points.console_scripts]
-QuickSES = "siesta.scripts.run_QuickSES:run_quickses"
+QuickSES = "siesta.scripts.run_QuickSES:quickses_runner"
+viewobj = "siesta.scripts.view_obj:view3d_runner"
