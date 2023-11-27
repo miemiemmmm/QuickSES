@@ -6,6 +6,16 @@ std::string mesh_to_ply_string(std::vector<MeshData> &meshes){
   std::clock_t start = std::clock();
 #endif
   std::string ply_string = "";
+  ply_string += "ply\n";
+  ply_string += "format ascii 1.0\n";
+  ply_string += "comment author: Yang Zhang (y.zhang@bioc.uzh.ch)\n";
+  ply_string += "element vertex " + std::to_string(meshes[0].NVertices) + "\n";
+  ply_string += "property float x\n";
+  ply_string += "property float y\n";
+  ply_string += "property float z\n";
+  ply_string += "element face " + std::to_string(meshes[0].NTriangles) + "\n";
+  ply_string += "property list uchar int vertex_indices\n";
+  ply_string += "end_header\n";
   unsigned int cumulVert = 0;
   for (int m = 0; m < meshes.size(); m++) {
     MeshData mesh = meshes[m];

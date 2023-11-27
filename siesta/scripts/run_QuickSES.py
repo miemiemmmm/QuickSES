@@ -37,10 +37,13 @@ def quickses_runner():
 		command += ["-v", str(args.voxel)]
 	if args.slice:
 		command += ["-s", str(args.slice)]
-	if args.debug: print("Final command: ", " ".join(command))
+	if args.debug:
+		print("Final command: ", " ".join(command))
 
 	# Run QuickSES
 	subprocess.run(command)
-	if args.debug: print("############# QuickSES finished successfully ##############")
+	if args.debug:
+		print("############# QuickSES finished successfully ##############")
+
 	return 0
 

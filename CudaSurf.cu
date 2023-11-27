@@ -20,38 +20,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
-#include "cuda_runtime.h"
-
-// includes
-#include <stdlib.h>
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
-#include <sstream>
-#include <iterator>
-#include <memory>
-#include <map>
-
-//#include <cassert>
-#include <fstream>
 #include <algorithm>
-#include <functional>
 #include <cctype>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <iterator>
 #include <locale>
 #include <math.h>
-
+#include <map>
+#include <memory>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sstream>
+#include <string.h>
 #include <vector>
 
-#include "args.hxx"
-
-#include "Kernels.cu"
 #include <cpdb/cpdb.h>
+#include "args.hxx"
+#include "Kernels.cu"
 #include "SmoothMesh.h"
 #include "CudaSurf.h"
+#include "ObjFormats.h"
 
+#include "cuda_runtime.h"
 #include <thrust/scan.h>
 #include <thrust/device_ptr.h>
 #include <thrust/sequence.h>
@@ -489,9 +481,9 @@ MeshData computeMarchingCubes(int3 sliceGridSESDim, int cutMC, int sliceNbCellSE
 
     gpuErrchk( cudaPeekAtLastError() );
 
-
+#if DEBUG_MODE
     cerr << "MC allocation = "<< memAlloc / 1000000.0f << " Mo" << endl;
-
+#endif
 
     int Ntriangles = totalVerts / 3;
 
@@ -531,13 +523,11 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
 
     //Record a mesh per slice
     std::vector<MeshData> resultMeshes;
-
     float3 minVal, maxVal;
     float maxAtomRad = 0.0;
 
     getMinMax(positions, radii, N, &minVal, &maxVal, &maxAtomRad);
 
-    cerr << "#atoms : "<<N<<endl;
     if (N <= 1) {
         cerr << "Failed to parse the PDB or empty PDB file" << endl;
         return resultMeshes;
@@ -639,13 +629,15 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
 
     gpuErrchk( cudaPeekAtLastError() );
 
+#if DEBUG_MODE
+    cerr << "#atoms : "<<N<<endl;
     cerr << "Allocating " << (( (sizeof(int) + sizeof(float)) * sliceNbCellSES + 3 * sizeof(int) * sliceNbCellSES) +  2 * sizeof(float4) * N +
                             sizeof(int2) * N + sizeof(int2) * nbcellsNeighbor )/ 1000000.0f << " Mo" << endl;
+    cerr << "Full size grid = " << gridSESSize << " x " << gridSESSize << " x " << gridSESSize << endl;
+#endif
 
     int3 offset = {0, 0, 0};
     int cut = 8;
-
-    cerr << "Full size grid = " << gridSESSize << " x " << gridSESSize << " x " << gridSESSize << endl;
 
     for (int i = 0; i < gridSESSize; i += sliceSmallSize) {
         offset.x = i;
@@ -738,6 +730,7 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
     free(atomPosRad);
 
 #if MEASURETIME
+    std::cout << "Time Measure: " << MEASURETIME << " ";
     std::cerr << "Time for computing SES " << (std::clock() - startSES) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
 #endif
     return resultMeshes;
@@ -792,10 +785,6 @@ API void API_computeSES(float resoSES, float3 *atomPos, float *atomRad, unsigned
     *NTri = totalTris;
     NTriangles = totalTris;
     NVertices = totalVerts;
-    // free(positions);
-
-    // globalVertices = out_vertices;
-    // globalTriangles = out_triangles;
 }
 
 
@@ -907,7 +896,6 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-
 std::vector<MeshData> get_mesh_by_xyzr(float *ptr, int N, int M, float grid_spacing, int smooth_steps, int slice_size){
   std::vector<float3> atomPos;
   std::vector<float> atomRadii;
@@ -915,11 +903,7 @@ std::vector<MeshData> get_mesh_by_xyzr(float *ptr, int N, int M, float grid_spac
     atomPos.push_back(make_float3(ptr[i*M], ptr[i*M+1], ptr[i*M+2]));
     atomRadii.push_back(ptr[i*M+3]);
   }
-
   SLICE = slice_size;
   std::vector<MeshData> resultMeshes = computeSlicedSES(&atomPos[0], &atomRadii[0], N, grid_spacing, smooth_steps);
   return resultMeshes;
 }
-
-
-// make clean && make && ./QuickSES -i 4kng.pdb -o test.obj

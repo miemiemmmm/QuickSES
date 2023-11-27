@@ -1,13 +1,15 @@
-import os, argparse
+import argparse
+import re
+# import sys
+# import os
+# from datetime import datetime
+# import functools
 
 import numpy as np
-import pytraj as pt
 import open3d as o3d
-# import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import re, sys
-from datetime import datetime
-import functools
+
+
 """
 MAP from atom type to its corresponding atom name and residue name
 # 1   , ^O$     , ^.*$    
@@ -247,6 +249,7 @@ ATOM_PATTERNS = {0: '^[0-9]*H.*$', 1: '^[0-9]*D.*$', 2: '^O.*$', 3: '^CA$', 4: '
                  158: '^C14$', 159: '^C.*$', 160: '^SEG$', 161: '^OXT$', 162: '^OT.*$', 163: '^E.*$', 164: '^S.*$',
                  165: '^C.*$', 166: '^A.*$', 167: '^O.*$', 168: '^N.*$', 169: '^R.*$', 170: '^K.*$', 171: '^P[A-D]$',
                  172: '^P.*$', 173: '^.O.*$', 174: '^.N.*$', 175: '^.C.*$', 176: '^.P.*$', 177: '^.H.*$'}
+
 RESIDUE_PATTERNS = {0: '^.*$', 1: '^.*$', 2: '^WAT|HOH|H2O|DOD|DIS$', 3: '^CA$', 4: '^CD$', 5: '^.*$', 6: '^ACE$',
                     7: '^.*$', 8: '^.*$', 9: '^.*$', 10: '^.*$', 11: '^.*$', 12: '^ALA$', 13: '^ILE|THR|VAL$',
                     14: '^.*$', 15: '^ASN|ASP|ASX|HIS|HIP|HIE|HID|HISN|HISL|LEU|PHE|TRP|TYR$',
@@ -276,6 +279,7 @@ RESIDUE_PATTERNS = {0: '^.*$', 1: '^.*$', 2: '^WAT|HOH|H2O|DOD|DIS$', 3: '^CA$',
                     165: '^.*$', 166: '^.*$', 167: '^.*$', 168: '^.*$', 169: '^.*$', 170: '^.*$', 171: '^.*$',
                     172: '^.*$', 173: '^FAD|NAD|AMX|APU$', 174: '^FAD|NAD|AMX|APU$', 175: '^FAD|NAD|AMX|APU$',
                     176: '^FAD|NAD|AMX|APU$', 177: '^FAD|NAD|AMX|APU$'}
+
 ATOM_NUM = {0: 15, 1: 15, 2: 2, 3: 18, 4: 22, 5: 22, 6: 9, 7: 4, 8: 7, 9: 10, 10: 1, 11: 13, 12: 9, 13: 7, 14: 8,
             15: 10, 16: 8, 17: 7, 18: 8, 19: 3, 20: 3, 21: 9, 22: 8, 23: 4, 24: 4, 25: 10, 26: 5, 27: 5, 28: 1,
             29: 5, 30: 3, 31: 3, 32: 3, 33: 3, 34: 1, 35: 5, 36: 3, 37: 3, 38: 3, 39: 13, 40: 13, 41: 12, 42: 3,
@@ -327,11 +331,11 @@ ELEMENT_NAME ={
 element_color_map = {
   # BASIC ELEMENTS
   "C": [0.5, 0.5, 0.5],
-  "H": [1,1,1],
-  "N": [0,0,1],
-  "O": [1,0,0],
-  "S": [1,1,0],
-  "P": [1,0.6,0.4],
+  "H": [1, 1, 1],
+  "N": [0, 0, 1],
+  "O": [1, 0, 0],
+  "S": [1, 1, 0],
+  "P": [1, 0.6, 0.4],
 
   # METALS
   "NA": [0.7, 0.7, 0.1],
@@ -369,6 +373,7 @@ def getAtomNum(atom="", residue=""):
   else:
     return ELEMENT_NAME.get(ATOM_NUM[pat], "U")
 
+
 def rotation_matrix_from_vectors(vec1, vec2):
   """ Find the rotation matrix that aligns vec1 to vec2
   :param vec1: A 3d "source" vector
@@ -382,13 +387,15 @@ def rotation_matrix_from_vectors(vec1, vec2):
   kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
   rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
   return rotation_matrix
-  
+
+
 def create_sphere(center, radius=0.5, color=[0, 0, 1]):
   sphere = o3d.geometry.TriangleMesh.create_sphere(radius)
   sphere.paint_uniform_color(color)
   sphere.translate(center)
   sphere.compute_vertex_normals()
   return sphere
+
 
 def create_box(center, size=0.5, color=[0, 0, 1]):
   box = o3d.geometry.TriangleMesh.create_box(size, size, size)
@@ -415,7 +422,8 @@ def create_cylinder(start, end, radius=0.2, color=[0.4275, 0.2941, 0.0745]):
 
 def molecule_to_o3d(pdb_path):
   # Load PDB structure
-  structure = pt.load(pdb_path)
+  from pytraj import load as ptload
+  structure = ptload(pdb_path)
   atoms = list(structure.top.atoms)
   residues = list(structure.top.residues)
   coords = list(structure.xyz[0])
@@ -431,7 +439,7 @@ def molecule_to_o3d(pdb_path):
     geometries.append(create_sphere(c, radius=0.5, color=color))
 
   # Add cylinders as bonds
-  for bond in list(structure.top.bonds): 
+  for bond in list(structure.top.bonds):
     n_i, n_j = bond.indices
     pos_1 = coords[n_i]
     pos_2 = coords[n_j]
@@ -459,6 +467,7 @@ def xyzr_to_o3d(xyzr_path, radius_factor=1.0):
     # geometries.append(create_box(c, size=radii[idx], color=color))
   return geometries
 
+
 def return_geom(obj, settings):
   if isinstance(obj, (o3d.geometry.TriangleMesh)):
     retobj = obj
@@ -471,85 +480,97 @@ def return_geom(obj, settings):
     return obj
 
 
-def color_geom(obj, index):
-	if isinstance(obj, (o3d.geometry.TriangleMesh)):
-		if settings.cmap:
-			cmap = cm.get_cmap(settings.cmap)
-			color = cmap(index)
-			retobj.paint_uniform_color(color)
-		else:
-			retobj.paint_uniform_color([0.5,0.5,0.5])
-	return retobj
+def color_geom(obj, index, cmap=None):
+  if isinstance(obj, (o3d.geometry.TriangleMesh)):
+    if cmap:
+      color_map = cm.get_cmap(cmap)
+      color = cmap(color_map)
+      obj.paint_uniform_color(color)
+    elif (cmap == "uniform"):
+      obj.paint_uniform_color([1, 0, 0])
+    elif (cmap == "random"):
+      obj.paint_uniform_color(np.random.rand(3))
+    else:
+      color_map = cm.get_cmap("jet")
+      color = color_map(index)
+      obj.paint_uniform_color(color)
+  return obj
 
 
 def view3d_parser():
-	parser = argparse.ArgumentParser(description='View 3D objects')
-	# Add additional objects for reference
-	parser.add_argument('-c', '--cube', type=float, default=0, help='Length of cube')
-	parser.add_argument('-ccenter', '--cube_center', nargs=3, type=float, help='Center of cube')
-	parser.add_argument('-s', '--sphere', type=float, default=0, help='Radius of sphere')
-	parser.add_argument('-scenter', '--sphere_center', nargs=3, type=float, help='Center of sphere')
-	parser.add_argument('-cf', '--coordinate_frame', action='store_true', help='Whether or not to add an additional coordinate frame')
+  parser = argparse.ArgumentParser(description='View 3D objects')
+  # Add additional objects for reference
+  parser.add_argument('-c', '--cube', type=float, default=0, help='Length of cube')
+  parser.add_argument('-ccenter', '--cube_center', nargs=3, type=float, help='Center of cube')
+  parser.add_argument('-s', '--sphere', type=float, default=0, help='Radius of sphere')
+  parser.add_argument('-scenter', '--sphere_center', nargs=3, type=float, help='Center of sphere')
+  parser.add_argument('-cf', '--coordinate_frame', type=bool, default=True, help='Whether or not to add an additional coordinate frame')
 
-	parser.add_argument('-w', '--wireframe', action='store_true', help='Whether or not to use lines instead of triangles')
-	parser.add_argument('-n', '--autonormal', action='store_false', help='Whether or not to use the normals from the mesh file')
-	parser.add_argument('-cmap', '--color_map', type=str, default=None, help='Color map to use for the mesh')
-	args, other_args = parser.parse_known_args()
-	return (args, other_args)
+  parser.add_argument('-w', '--wireframe', type=bool, default=False, help='Whether or not to use lines instead of triangles')
+  parser.add_argument('-n', '--autonormal', type=bool, default=True, help='Whether or not to use the normals from the mesh file')
+  parser.add_argument('-cmap', '--color_map', type=str, default=None, help='Color map to use for the mesh')
+  parser.add_argument('-d', '--debug', type=bool, default=False, help='Whether or not to use the normals from the mesh file')
+  args, other_args = parser.parse_known_args()
+  return (args, other_args)
 
 
 def view3d_runner():
-	settings, filelist = view3d_parser()
-	print(settings, filelist)
-	final_geometries = []
-	# Supported MolFormat: pdb, sdf, mol2
-	# Supported ObjFormat: pcd, obj, ply, off, xyzr
-	for file in filelist:
-		if ".pdb" in file or ".mol2" in file:
-			geometries = molecule_to_o3d(file)
-			if settings.autonormal:
-				mesh.compute_vertex_normals()
-			final_geometries += geometries
-		elif ".ply" in file or ".obj" in file or ".off" in file:
-			try:
-				mesh = o3d.io.read_triangle_mesh(file)
-				if np.array(mesh.triangles).shape[0] == 0:
-					raise Exception("No face normals found in the ply file.")
-			except:
-				mesh = o3d.io.read_point_cloud(file)
-			if settings.autonormal:
-				mesh.compute_vertex_normals()
-			mesh.paint_uniform_color([0.5,0.1,0.1])
-			newgeo = return_geom(mesh, settings)
-			final_geometries += [newgeo]
-		elif ".xyzr" in file:
-			xyzr_geoms = xyzr_to_o3d(file, radius_factor=1)
-			final_geometries += xyzr_geoms
-		else:
-			print(f"Warning: {file} is not a supported file type. Skipping...")
-			print(f"Check this website for supported file types: http://www.open3d.org/docs/0.9.0/tutorial/Basic/file_io.html")
+  # Supported MolFormat: pdb, sdf, mol2
+  # Supported ObjFormat: pcd, obj, ply, off, xyzr
+  settings, filelist = view3d_parser()
+  if settings.debug:
+    print("The following files will be rendered: \n", filelist, "\n")
+    print("With the following configurations: \n", settings, "\n")
 
-	if settings.cube:
-		from nearl.utils.view import NewCuboid
-		c_length = settings.cube
-		if settings.cube_center:
-			c_center = settings.cube_center
-		else:
-			c_center = [0, 0, 0]
-		cuboid = create_box(c_center, size=c_length)
-		final_geometries += [cuboid]
-	if settings.sphere:
-		if settings.scenter:
-			s_center = settings.scenter
-		else:
-			s_center = [0, 0, 0]
-		mesh = create_sphere(s_center, radius=settings.sphere)
-		final_geometries += [mesh]
+  final_geometries = []
+  for file in filelist:
+    if ".pdb" in file or ".mol2" in file:
+      geometries = molecule_to_o3d(file)
+      if settings.autonormal:
+        for geo in geometries:
+          geo.compute_vertex_normals()
+      final_geometries += geometries
+    elif ".ply" in file or ".obj" in file or ".off" in file:
+      try:
+        mesh = o3d.io.read_triangle_mesh(file)
+        if np.array(mesh.triangles).shape[0] == 0:
+          raise Exception("No face normals found in the ply file.")
+      except:
+        mesh = o3d.io.read_point_cloud(file)
+      if settings.autonormal:
+        mesh.compute_vertex_normals()
+      mesh.paint_uniform_color([0.5,0.1,0.1])
+      newgeo = return_geom(mesh, settings)
+      final_geometries += [newgeo]
+    elif ".xyzr" in file:
+      xyzr_geoms = xyzr_to_o3d(file, radius_factor=1)
+      final_geometries += xyzr_geoms
+    else:
+      print(f"Warning: {file} is not a supported file type. Skipping...")
+      print(f"Check this website for supported file types: http://www.open3d.org/docs/0.9.0/tutorial/Basic/file_io.html")
 
+  if settings.cube:
+    c_length = settings.cube
+    if settings.cube_center:
+      c_center = settings.cube_center
+    else:
+      c_center = [0, 0, 0]
+    cuboid = create_box(c_center, size=c_length)
+    final_geometries += [cuboid]
+  if settings.sphere:
+    if settings.scenter:
+      s_center = settings.scenter
+    else:
+      s_center = [0, 0, 0]
+    mesh = create_sphere(s_center, radius=settings.sphere)
+    final_geometries += [mesh]
+  if settings.coordinate_frame:
+    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])
+    final_geometries += [mesh_frame]
 
-	# Finally draw the geometries
-	o3d.visualization.draw_geometries(final_geometries)
-	# timestamp = datetime.now().strftime('%Y%m%d_%H%M')
-	# o3d.io.write_triangle_mesh(f"/tmp/OBJSET_mesh_{timestamp}.ply", functools.reduce(lambda a, b: a + b, geometries), write_ascii=True)
+  # Finally draw the geometries
+  o3d.visualization.draw_geometries(final_geometries)
+  # timestamp = datetime.now().strftime('%Y%m%d_%H%M')
+  # o3d.io.write_triangle_mesh(f"/tmp/OBJSET_mesh_{timestamp}.ply", functools.reduce(lambda a, b: a + b, geometries), write_ascii=True)
   # o3d.io.write_triangle_mesh(f"/tmp/OBJSET_surface_{timestamp}.ply", mesh, write_ascii=True)
 
