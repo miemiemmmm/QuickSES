@@ -1,6 +1,6 @@
 # SiESTA-Surf
 
-<img src="SiEST-Surf_LOGO.png" style="">
+<img src="Images/SiESTA-Surf_LOGO.png" style="">
 
 # ⚠️ NOTE: This repository is still under construction. Please use it with caution. ⚠️
 
