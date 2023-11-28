@@ -63,25 +63,82 @@ This API focuses on converting any structural file formats (e.g. PDB, sdf, mol2 
 You could either use the API to convert the structures to vertices and faces as numpy array.
 You could also directly convert it to 3D surface triangle mesh. Currently supported object file formats are ply and obj.
 
-```Python
-import siesta as sst
-sst.pdb_to_xyzr()
-sst.pdb_to_file()
-sst.pdb_to_string()
-sst.pdb_to_surf()
-sst.xyzr_to_file()
-sst.xyzr_to_string() 
-sst.xyzr_to_surf()
-```
+The following are the currently available functions:
+----------------------------------------------------------------
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.pdb_to_xyzr(str pdb_file_name)
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a numpy array with shape (N, 4), where N is the number of atoms in the PDB file.
+</div>
+All the following functions accept "grid_size", "smooth_step", "slice_number" as optional arguments.
+
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.pdb_to_file(str pdb_file_name, str output_file_name, str format='ply')
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a surface mesh file. The default output format is ply.
+</div>
+
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.pdb_to_string(str pdb_file_name, str format='ply')
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a string of surface mesh. The default output format is ply.
+</div>
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.pdb_to_surf(str pdb_file_name)
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a tuple containing the vertices shaped (V, 3) and faces (F, 3) of the surface mesh, where V is the number of vertices and F is the number of faces.
+</div>
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px"> 
+    siesta.xyzr_to_file(np.array xyzr, str output_file_name, str format='ply')
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape (N, 4) to a surface mesh file. The default output format is ply.
+</div>
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.xyzr_to_string(np.array xyzr, str format='ply')
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape (N, 4) to a string of surface mesh. The default output format is ply.
+</div>
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.xyzr_to_surf(np.array xyzr)
+</h4>
+    &nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape (N, 4) to a tuple containing the vertices shaped (V, 3) and faces (F, 3) of the surface mesh, where V is the number of vertices and F is the number of faces.
+</div>
+
+
+----------------------------------------------------------------
+
+[//]: # (```Python)
+
+[//]: # (import siesta as sst)
+
+[//]: # (sst.pdb_to_string&#40;&#41;)
+
+[//]: # (sst.pdb_to_surf&#40;&#41;)
+
+[//]: # (sst.xyzr_to_file&#40;&#41;)
+
+[//]: # (sst.xyzr_to_string&#40;&#41; )
+
+[//]: # (sst.xyzr_to_surf&#40;&#41;)
+
+[//]: # (```)
 
 ### QuickSES mini-program
 ```bash
-$> QuickSES -h   # view help
-$> QuickSES -i 4bso.pdb -o 4bso_Surface.obj -v 0.2 
+$ QuickSES -h   # view help
+$ QuickSES -i 4bso.pdb -o 4bso_pysurf.obj -v 0.2 
 ```
 The default resolution is set to 0.5 Å but can be changed at runtime using -v argument. 
 The size of the slice that defines how much memory QuickSES uses can be changed using -s argument.
 For the other usage of QuickSES, please refer to its original repository [QuickSES](https://github.com/nezix/QuickSES).
+
+----------------------------------------------------------------
 
 ### viewobj mini-program
 If you have [Open3D](http://www.open3d.org/) installed in your python environment, you can use **viewobj** to visualize the surface mesh and some commonlu used structure files.
@@ -96,29 +153,29 @@ $ viewobj 4bso_Surface.obj
 Current supported format includes:
 
 <table style="width: 600px">
-<tr><td colspan="2" style="text-align: center; font-weight: bolder;">Structural</td></tr>
-<tr><td>XYZR</td><td>.xyzr</td></tr>
-<tr><td>PDB</td><td>.pdb</td></tr>
+<tr><td colspan="2" style="text-align: center; font-weight: bolder;">Structural formats</td></tr>
+<tr><td>Protein Data Bank (PDB) format</td><td>.pdb</td></tr>
 <tr><td>Sybyl Mol2</td><td>.mol2</td></tr>
 <tr><td>MDL SDF</td><td>.sdf</td></tr>
-<tr><td>Coord+radius XYZR</td><td>.xyzr</td></tr>
-<tr><td colspan="2" style="text-align: center; font-weight: bolder;">Mesh</td></tr>
+<tr><td>Coord+Radius (XYZR)</td><td>.xyzr</td></tr>
+<tr><td colspan="2" style="text-align: center; font-weight: bolder;">Mesh formats</td></tr>
 <tr><td>Polygon File Format (Default output format)</td><td>.ply</td></tr>
 <tr><td>Wavefront OBJ format</td><td>.obj</td></tr>
 <tr><td>Object File Format</td><td>.off</td></tr>
 </table>
 
+----------------------------------------------------------------
 
-## Acknowledgments and links
+## Acknowledgments
 This project is based on [QuickSES](https://github.com/nezix/QuickSES) by [Xavier Martinez](https://github.com/nezix).
 Without these open source projects, this project would not be possible.
 
 Check these links to cite the [QuickSES](https://hal.archives-ouvertes.fr/hal-02370900/document) and the implemented GPU-based SES computation [algorithm](https://www.uni-ulm.de/fileadmin/website_uni_ulm/iui.inst.100/institut/Papers/viscom/2017/hermosilla17ses.pdf). 
-
 [CPDB](https://github.com/vegadj/cpdb) is used for parsing PDB files. 
 
-[Pybind11](https://github.com/pybind/pybind11) is used for wrapping C++ code to Python API.
+[Pybind11](https://github.com/pybind/pybind11) is used for wrapping C++/CUDA code to Python API.
+
+The [LOGO](Images/SiESTA-Surf_LOGO.png) is designed by [DALL·E 3](https://openai.com/dall-e-3). 
 
 ## License
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
