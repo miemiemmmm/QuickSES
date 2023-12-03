@@ -73,84 +73,7 @@ void initRadiusDic() {
     radiusDic['X'] = 1.40f * factor;
 }
 
-
-unsigned int getMinMax(chain *C, float3 *minVal, float3 *maxVal, float *maxAtom) {
-    atom *A = NULL;
-    unsigned int N = 0;
-
-
-    A = &C->residues[0].atoms[0];
-    float3 vmin, vmax, coords;
-
-    vmin.x = vmin.y = vmin.z = 100000.0f;
-    vmax.x = vmax.y = vmax.z = -100000.0f;
-    *maxAtom = 0.0f;
-    while (A != NULL) {
-        coords = A->coor;
-        vmin.x = std::min(vmin.x, coords.x);
-        vmin.y = std::min(vmin.y, coords.y);
-        vmin.z = std::min(vmin.z, coords.z);
-
-        vmax.x = std::max(vmax.x, coords.x);
-        vmax.y = std::max(vmax.y, coords.y);
-        vmax.z = std::max(vmax.z, coords.z);
-
-        float atomRad;
-        if (radiusDic.count(A->element[0]))
-            atomRad = radiusDic[A->element[0]];
-        else
-            atomRad = radiusDic['X'];
-        *maxAtom = std::max(*maxAtom, atomRad);
-        N++;
-        A = A->next;
-    }
-    *minVal = vmin;
-    *maxVal = vmax;
-    return N;
-}
-
-
-unsigned int getMinMax(pdb *P, float3 *minVal, float3 *maxVal, float *maxAtom) {
-    atom *A = NULL;
-    unsigned int N = 0;
-    chain *C = NULL;
-    *maxAtom = 0.0f;
-    float3 vmin, vmax, coords;
-
-    vmin.x = vmin.y = vmin.z = 100000.0f;
-    vmax.x = vmax.y = vmax.z = -100000.0f;
-
-    for (int chainId = 0; chainId < P->size; chainId++) {
-        C = &P->chains[chainId];
-
-        A = &C->residues[0].atoms[0];
-
-        while (A != NULL) {
-            coords = A->coor;
-            vmin.x = std::min(vmin.x, coords.x);
-            vmin.y = std::min(vmin.y, coords.y);
-            vmin.z = std::min(vmin.z, coords.z);
-
-            vmax.x = std::max(vmax.x, coords.x);
-            vmax.y = std::max(vmax.y, coords.y);
-            vmax.z = std::max(vmax.z, coords.z);
-
-            float atomRad;
-            if (radiusDic.count(A->element[0]))
-                atomRad = radiusDic[A->element[0]];
-            else
-                atomRad = radiusDic['X'];
-            *maxAtom = std::max(*maxAtom, atomRad);
-            N++;
-            A = A->next;
-        }
-    }
-    *minVal = vmin;
-    *maxVal = vmax;
-    return N;
-}
-
-
+// Only this version is used
 void getMinMax(float3 *positions, float *radii, unsigned int N, float3 *minVal, float3 *maxVal, float *maxAtom) {
     *maxAtom = 0.0f;
     float3 vmin, vmax, coords;
@@ -440,7 +363,8 @@ MeshData computeMarchingCubes(int3 sliceGridSESDim, int cutMC, int sliceNbCellSE
 
     gpuErrchk( cudaPeekAtLastError() );
 
-
+//    std::cout << "In cuda function: Number of vertices = " << totalVerts << std::endl;
+//    std::cout << "In cuda function: Number of triangles = " << totalVerts / 3 << std::endl;
     //Weld vertices
     float3 *vertOri;
     int *cudaTri;
@@ -492,6 +416,7 @@ MeshData computeMarchingCubes(int3 sliceGridSESDim, int cutMC, int sliceNbCellSE
     result.atomIdPerVert = (int *) malloc(sizeof(int) * newtotalVerts);
     result.NVertices = newtotalVerts;
     result.NTriangles = Ntriangles;
+//    std::cout << "Number of new vertices = " << newtotalVerts << std::endl;
 
     int *tmpTri = (int *)malloc(sizeof(int) * totalVerts);
 
@@ -499,18 +424,38 @@ MeshData computeMarchingCubes(int3 sliceGridSESDim, int cutMC, int sliceNbCellSE
     gpuErrchk(cudaMemcpy(result.atomIdPerVert, cudaAtomIdPerVert, sizeof(int) * newtotalVerts, cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tmpTri, cudaTri, sizeof(int)*totalVerts, cudaMemcpyDeviceToHost));
 
+//    std::cout << "_______________________________________________" << std::endl;
+//    std::cout << "Check the output from the kernel" << std::endl;
+//    for (int i = 0; i < Ntriangles; i++) {
+//        if (tmpTri[i*3] == tmpTri[i*3+1] || tmpTri[i*3] == tmpTri[i*3+2] || tmpTri[i*3+1] == tmpTri[i*3+2]) {
+//            cerr << "During processing the vertex " << i << " \n Fatal error: identical vertices found: " ;
+//            cerr << tmpTri[i*3] << " " << tmpTri[i*3+1] << " " << tmpTri[i*3+2] << endl;
+//        }
+//    }
+//    std::cout << "_______________________________________________" << std::endl;
+
     //Store the triangle in a 3d vector
     for (int i = 0; i < Ntriangles; i++) {
         result.triangles[i].x = tmpTri[i * 3 + 0];
         result.triangles[i].y = tmpTri[i * 3 + 1];
         result.triangles[i].z = tmpTri[i * 3 + 2];
     }
+
+//    for (int i = 0; i < Ntriangles; i++) {
+//        if (result.triangles[i].x == result.triangles[i].y || result.triangles[i].x == result.triangles[i].z || result.triangles[i].y == result.triangles[i].z) {
+//            cerr << "During processing the triangle " << i << " \n Fatal error: identical vertices found: " ;
+//            cerr << result.triangles[i].x << " " << result.triangles[i].y << " " << result.triangles[i].z << endl;
+//        }
+//    }
+//    std::cout << "_______________________________________________" << std::endl;
+
     free(tmpTri);
 
     gpuErrchk(cudaFree(cudaVertices));
     gpuErrchk(cudaFree(vertOri));
     gpuErrchk(cudaFree(cudaTri));
     gpuErrchk(cudaFree(cudaAtomIdPerVert));
+
 
     return result;
 }
@@ -525,8 +470,21 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
     std::vector<MeshData> resultMeshes;
     float3 minVal, maxVal;
     float maxAtomRad = 0.0;
-
+//    cout << "Inputed the XYZR, computing the sliced SES" << endl;
+//    cout << "Got " << N << " atoms" << endl;
     getMinMax(positions, radii, N, &minVal, &maxVal, &maxAtomRad);
+
+    // Needs to add some padding to the grid
+    float diff_x = maxVal.x - minVal.x;
+    float diff_y = maxVal.y - minVal.y;
+    float diff_z = maxVal.z - minVal.z;
+    // NOTE: TODO: Added this to try solving the problem of the
+    minVal.x -= std::max(diff_x * 0.1f, 5.0f);
+    minVal.y -= std::max(diff_y * 0.1f, 5.0f);
+    minVal.z -= std::max(diff_z * 0.1f, 5.0f);
+    maxVal.x += std::max(diff_x * 0.1f, 5.0f);
+    maxVal.y += std::max(diff_y * 0.1f, 5.0f);
+    maxVal.z += std::max(diff_z * 0.1f, 5.0f);
 
     if (N <= 1) {
         cerr << "Failed to parse the PDB or empty PDB file" << endl;
@@ -536,7 +494,18 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
     float4 *atomPosRad = getArrayAtomPosRad(positions, radii, N);
     float maxDist = computeMaxDist(minVal, maxVal, maxAtomRad);
 
+//    cout << "Atomic ";
+
     gridResolutionNeighbor = probeRadius + maxAtomRad;
+
+//    std::cout << "atomPosRad = " << atomPosRad[0].x << " " << atomPosRad[0].y << " " << atomPosRad[0].z << " " << atomPosRad[0].w << std::endl;
+//    std::cout << "Systematic settings" << std::endl;
+//    std::cout << "Slice resolution/Voxel size = " << resoSES << std::endl;
+//    std::cout << "Slice size = " << SLICE << std::endl;
+//    std::cout << "Slice number = " << (int)ceil(maxDist / resoSES) << std::endl;
+//    std::cout << "Max Distance = " << maxDist << std::endl;
+//    std::cout << "Max Atomic Radius = " << maxAtomRad << std::endl;
+
 
     //Grid is a cube
     float3 originGridNeighbor = {
@@ -544,6 +513,8 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
         minVal.y - maxAtomRad - 2 * probeRadius,
         minVal.z - maxAtomRad - 2 * probeRadius
     };
+
+//    cout << "originGridNeighbor = " << originGridNeighbor.x << " " << originGridNeighbor.y << " " << originGridNeighbor.z << endl;
 
     int gridNeighborSize = (int)ceil(maxDist / gridResolutionNeighbor);
 
@@ -639,16 +610,23 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
     int3 offset = {0, 0, 0};
     int cut = 8;
 
+//    cout << "Started the process: gridSESSize = " << gridSESSize << " / sliceSmallSize = " << sliceSmallSize << " / sliceSize = " << sliceSize << endl;
+
     for (int i = 0; i < gridSESSize; i += sliceSmallSize) {
         offset.x = i;
         for (int j = 0; j < gridSESSize; j += sliceSmallSize) {
             offset.y = j;
             for (int k = 0; k < gridSESSize; k += sliceSmallSize) {
                 offset.z = k;
-                // cerr << "-----------------------------\nStarting : " << offset.x << " / " << offset.y << " / " << offset.z << endl;
+//                cerr << "-----------------------------\nStarting : " << offset.x << " / " << offset.y << " / " << offset.z << endl;
+//                cout << "cut = " << cut << endl;
+//                cout << "rangeSearchRefine = " << rangeSearchRefine << endl;
+//                cout << "probeRadius = " << probeRadius << endl;
+//                cout << "Nr blocks = " << (sliceNbCellSES + NBTHREADS - 1) / NBTHREADS << " / Nr threads = " << NBTHREADS << endl;
 
                 memsetCudaFloat <<< (sliceNbCellSES + NBTHREADS - 1) / NBTHREADS, NBTHREADS >>> (cudaGridValues, probeRadius, sliceNbCellSES);
                 memsetCudaInt <<< (sliceNbCellSES + NBTHREADS - 1) / NBTHREADS, NBTHREADS >>> (cudaFillCheck, EMPTYCELL, sliceNbCellSES);
+
 
                 dim3 localWorkSize(cut, cut, cut);
                 // dim3 globalWorkSize((sliceSmallSize + cut - 1) / cut, (sliceSmallSize + cut - 1) / cut, (sliceSmallSize + cut - 1) / cut);
@@ -674,7 +652,7 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
 
 
                 if (notEmptyCells == 0) {
-                    // cerr << "Empty cells !!!" << endl;
+                     cerr << "Empty cells !!!" << endl;
                     continue;
                 }
 
@@ -709,6 +687,8 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
                     cudaStreamDestroy(streams[i]);
                 //Reset grid values that are outside of the slice
                 //Marching cubes
+//                cout << "fullSliceGridSESDim = " << fullSliceGridSESDim.x << " " << fullSliceGridSESDim.y << " " << fullSliceGridSESDim.z << endl;
+
                 MeshData mesh = computeMarchingCubes(fullSliceGridSESDim, cut, sliceNbCellSES, cudaGridValues,
                                                      vertPerCell, compactedVoxels, gridSESDim, originGridSESDx, reducedOffset,
                                                      cudaSortedAtomPosRad, cellStartEnd, gridNeighborDim, originGridNeighborDx, rangeSearchRefine);

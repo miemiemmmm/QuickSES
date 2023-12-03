@@ -127,6 +127,8 @@ std::string xyzr_to_string(py::array_t<float> xyzr, std::string &format, float g
     return mesh_to_ply_string(resultMeshes);
   else if (format == "obj")
     return mesh_to_obj_string(resultMeshes);
+	else if (format == "off")
+		return mesh_to_off_string(resultMeshes);
   else
     std::cerr << "Output format " << format<< " is not supported" << std::endl;
     return "";
@@ -159,48 +161,47 @@ PYBIND11_MODULE(siesta, m) {
   );
 
   m.def("xyzr_to_surf",
-    &xyzr_to_surf,					// TODO
+    &xyzr_to_surf,
     py::arg("xyzr"),
-    py::arg("grid_size") = 0.25,
-    py::arg("smooth_step") = 10,
-    py::arg("slice_number") = 800
+    py::arg("grid_size") = 0.5,
+    py::arg("smooth_step") = 0,
+    py::arg("slice_number") = 300
   );
 
   m.def("pdb_to_surf",
-    &pdb_to_surf,       // TODO
+    &pdb_to_surf,
     py::arg("pdb_file"),
-    py::arg("grid_size") = 0.25,
-    py::arg("smooth_step") = 10,
-    py::arg("slice_number") = 800
+    py::arg("grid_size") = 0.5,
+    py::arg("smooth_step") = 0,
+    py::arg("slice_number") = 300
   );
 
-  // TODO
   m.def("xyzr_to_string",
-		&xyzr_to_string,     // TODO
+		&xyzr_to_string,
 		py::arg("xyzr"),
 		py::arg("format") = "ply",
-		py::arg("grid_size") = 0.25,
-		py::arg("smooth_step") = 10,
-		py::arg("slice_number") = 800
+		py::arg("grid_size") = 0.5,
+		py::arg("smooth_step") = 0,
+		py::arg("slice_number") = 300
   );
 
   m.def("pdb_to_string",
     &pdb_to_string,
     py::arg("pdb_file"),
     py::arg("format") = "ply",
-    py::arg("grid_size") = 0.25,
-    py::arg("smooth_step") = 10,
-    py::arg("slice_number") = 800
+    py::arg("grid_size") = 0.5,
+    py::arg("smooth_step") = 0,
+    py::arg("slice_number") = 300
   );
 
   m.def("xyzr_to_file",
-    &xyzr_to_file,      // TODO
+    &xyzr_to_file,
     py::arg("xyzr"),
     py::arg("file_name"),
     py::arg("format") = "ply",
-    py::arg("grid_size") = 0.25,
-    py::arg("smooth_step") = 10,
-    py::arg("slice_number") = 800
+    py::arg("grid_size") = 0.5,
+    py::arg("smooth_step") = 0,
+    py::arg("slice_number") = 300
   );
 
   m.def("pdb_to_file",
@@ -208,9 +209,9 @@ PYBIND11_MODULE(siesta, m) {
     py::arg("pdb_file"),
     py::arg("out_file"),
     py::arg("format") = "ply",
-    py::arg("grid_size") = 0.25,
-    py::arg("smooth_step") = 10,
-    py::arg("slice_number") = 800
+    py::arg("grid_size") = 0.5,
+    py::arg("smooth_step") = 0,
+    py::arg("slice_number") = 300
   );
 
 }

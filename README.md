@@ -22,7 +22,7 @@ It will install the python package siesta-surf, as well as two console programs:
 $ pip install siesta-surf
 ```
 
-### Install from Source distribution (Will be available soon)
+### Install from Source distribution
 ```bash
 $ wget http://www.placeholder/for/url/to/siesta-surf-0.0.1.tar.gz
 $ pip install -v siesta-surf-0.0.1.tar.gz 
@@ -45,12 +45,12 @@ print('Test1: Converted PDB to XYZR array: ', xyzr.shape);
 sst.pdb_to_file('4bso.pdb', '4bso_pysurf.obj', format='obj', grid_size=0.5);
 print('Test2: Surface mesh saved to 4bso_pysurf.obj');
 ply_str = sst.pdb_to_string('4bso.pdb'); 
-print('Test3: First 400 characters from the result PLY string: '); print(ply_str[:400], '......\n');
-sst.xyzr_to_file(xyzr, '4bso_pysurf.ply', format='ply', grid_size=0.3);
+print('Test3: First 400 characters from the result PLY string: '); print(ply_str[:200], '......\n');
+sst.xyzr_to_file(xyzr, '4bso_pysurf.ply', format='ply', grid_size=0.2);
 print('Test4: Surface mesh computed from the previously computed XYZR array saved to 4bso_pysurf.ply');
 """ 
 # QuickSES console program
-$ QuickSES -i 4bso.pdb -o 4bso_surface.obj -v 0.2
+$ QuickSES -i 4bso.pdb -o 4bso_surface.obj -v 0.2 
 # viewobj console program
 $ viewobj 4bso_pysurf.obj 4bso_pysurf.ply   # View the python generated surface mesh
 $ viewobj 4bso_surface.obj 4bso.pdb -w 1    # View the QuickSES generated surface mesh
@@ -63,71 +63,87 @@ This API focuses on converting any structural file formats (e.g. PDB, sdf, mol2 
 You could either use the API to convert the structures to vertices and faces as numpy array.
 You could also directly convert it to 3D surface triangle mesh. Currently supported object file formats are ply and obj.
 
-The following are the currently available functions:
+Current available functions:
 ----------------------------------------------------------------
 <div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_xyzr(str pdb_file_name)
+    siesta.pdb_to_xyzr(pdb_file_name:str) -> np.ndarray
 </h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a numpy array with shape (N, 4), where N is the number of atoms in the PDB file.
+<span>Compute the xyzr array from pdb file</span><br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <span>pdb_file_name: str </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>xyzr: np.ndarray shaped (N,4)</span>
 </div>
-All the following functions accept "grid_size", "smooth_step", "slice_number" as optional arguments.
+
+#### The following surface generation functions accept "grid_size", "smooth_step", "slice_number" as optional arguments to control the quality of mesh.
+
+<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
+    siesta.pdb_to_file(pdb_file_name:str, output_file_name:str, format:str='ply') -> None
+</h4>
+<span>Generate the surface to file from pdb file</span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
+    <span style="margin-left: 100px; ">pdb_file_name: str </span> <br>
+    <span style="margin-left: 100px; ">output_file_name: str </span> <br>
+    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>None</span>
+</div>
 
 
 <div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_file(str pdb_file_name, str output_file_name, str format='ply')
+    siesta.pdb_to_string(pdb_file_name:str, format:str='ply') -> str
 </h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a surface mesh file. The default output format is ply.
-</div>
-
-
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_string(str pdb_file_name, str format='ply')
-</h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a string of surface mesh. The default output format is ply.
+<span>Get the string of surface mesh from pdb file</span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
+    <span style="margin-left: 100px; ">pdb_file_name: str </span> <br>
+    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>surface_string: str</span>
 </div>
 
 <div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_surf(str pdb_file_name)
+    siesta.pdb_to_surf(pdb_file_name:str)
 </h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a PDB file to a tuple containing the vertices shaped (V, 3) and faces (F, 3) of the surface mesh, where V is the number of vertices and F is the number of faces.
+<span>Generate the surface mesh from pdb file</span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <span>pdb_file_name: str </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>tuple(vertices, faces)</span>
 </div>
 
 <div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px"> 
-    siesta.xyzr_to_file(np.array xyzr, str output_file_name, str format='ply')
+    siesta.xyzr_to_file(np.array xyzr, str output_file_name, format:str='ply') -> None
 </h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape (N, 4) to a surface mesh file. The default output format is ply.
+<span>Generate the surface file from xyzr array</span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
+    <span style="margin-left: 100px; ">xyzr: np.ndarray shaped (N,4) </span> <br>
+    <span style="margin-left: 100px; ">output_file_name: str </span> <br>
+    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>None</span>
 </div>
 
 <div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.xyzr_to_string(np.array xyzr, str format='ply')
+    siesta.xyzr_to_string(np.array xyzr, format:str='ply') -> str
 </h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape (N, 4) to a string of surface mesh. The default output format is ply.
+<span>Generate surface object as string from xyzr array</span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
+    <span style="margin-left: 100px; ">xyzr: np.ndarray shaped (N,4) </span> <br> 
+    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>surface_string: str</span>
 </div>
 
 <div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.xyzr_to_surf(np.array xyzr)
+    siesta.xyzr_to_surf(np.array xyzr) -> tuple(vertices, faces)
 </h4>
-    &nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape (N, 4) to a tuple containing the vertices shaped (V, 3) and faces (F, 3) of the surface mesh, where V is the number of vertices and F is the number of faces.
+<span>Compute the vertices and faces</span><br>
+<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <span> xyzr: xyzr array shaped (N,4) </span> <br>
+<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>surface_tuple: tuple(vertices, faces)</span>
 </div>
 
 
 ----------------------------------------------------------------
 
-[//]: # (```Python)
 
-[//]: # (import siesta as sst)
+[//]: # (<span>&nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape &#40;N, 4&#41; to a string of surface mesh. The default output format is ply. </span>)
+[//]: # (&nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape &#40;N, 4&#41; to a tuple containing the vertices shaped &#40;V, 3&#41; and faces &#40;F, 3&#41; of the surface mesh, )
+[//]: # (where V is the number of vertices and F is the number of faces. )
 
-[//]: # (sst.pdb_to_string&#40;&#41;)
 
-[//]: # (sst.pdb_to_surf&#40;&#41;)
 
-[//]: # (sst.xyzr_to_file&#40;&#41;)
-
-[//]: # (sst.xyzr_to_string&#40;&#41; )
-
-[//]: # (sst.xyzr_to_surf&#40;&#41;)
-
-[//]: # (```)
 
 ### QuickSES mini-program
 ```bash

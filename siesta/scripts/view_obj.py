@@ -504,12 +504,12 @@ def view3d_parser():
   parser.add_argument('-ccenter', '--cube_center', nargs=3, type=float, help='Center of cube')
   parser.add_argument('-s', '--sphere', type=float, default=0, help='Radius of sphere')
   parser.add_argument('-scenter', '--sphere_center', nargs=3, type=float, help='Center of sphere')
-  parser.add_argument('-cf', '--coordinate_frame', type=bool, default=True, help='Whether or not to add an additional coordinate frame')
+  parser.add_argument('-cf', '--coordinate_frame', type=int, default=0, help='Whether or not to add an additional coordinate frame')
 
-  parser.add_argument('-w', '--wireframe', type=bool, default=False, help='Whether or not to use lines instead of triangles')
-  parser.add_argument('-n', '--autonormal', type=bool, default=True, help='Whether or not to use the normals from the mesh file')
+  parser.add_argument('-w', '--wireframe', type=int, default=0, help='Whether or not to use lines instead of triangles')
+  parser.add_argument('-n', '--autonormal', type=int, default=1, help='Whether or not to use the normals from the mesh file')
   parser.add_argument('-cmap', '--color_map', type=str, default=None, help='Color map to use for the mesh')
-  parser.add_argument('-d', '--debug', type=bool, default=False, help='Whether or not to use the normals from the mesh file')
+  parser.add_argument('-d', '--debug', type=int, default=0, help='Whether or not to use the normals from the mesh file')
   args, other_args = parser.parse_known_args()
   return (args, other_args)
 

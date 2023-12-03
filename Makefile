@@ -9,11 +9,11 @@
 #             -gencode=arch=compute_75,code=compute_75
 
 NVCC=nvcc
-NVCCFLAGS=-use_fast_math -O3 --compiler-options "-fPIC" -I. -DMEASURETIME=0
+NVCCFLAGS=-use_fast_math -O0 --compiler-options "-fPIC" -I. -DMEASURETIME=0
 CUDARUNTIME=-I/usr/local/cuda/include/ -lcudart -L/usr/local/cuda/lib64/ -DMEASURETIME=0
 
 CC=g++
-CFLAGS=-O3 -fPIC
+CFLAGS=-O0 -fPIC
 PYFLAGS=-I/home/yzhang/mamba/envs/mlenv/include/python3.9 -I.
 
 # Using NVCC with pybind11 causes implicit failure
@@ -49,4 +49,4 @@ test:
 	"""
 
 install:
-	python -m build && pip install -v dist/siesta-surf-0.0.1.tar.gz
+	make clean && python -m build && pip install --force-reinstall -v dist/siesta_surf-0.0.1-py3-none-any.whl

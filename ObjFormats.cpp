@@ -138,3 +138,53 @@ void mesh_to_ply_file(const std::string &fileName, std::vector<MeshData> &meshes
   fclose(fptr);
 }
 
+
+std::string mesh_to_off_string(std::vector<MeshData> &meshes){
+	std::string off_string = "";
+	off_string += "OFF\n";
+	off_string += std::to_string(meshes[0].NVertices) + " " + std::to_string(meshes[0].NTriangles) + " 0\n";
+	unsigned int cumulVert = 0;
+	for (int m = 0; m < meshes.size(); m++) {
+		MeshData mesh = meshes[m];
+		for (int i = 0; i < mesh.NVertices; i++) {
+			float3 vert = mesh.vertices[i];
+			off_string += std::to_string(vert.x) + " " + std::to_string(vert.y) + " " + std::to_string(vert.z) + "\n";
+		}
+	}
+	for (int m = 0; m < meshes.size(); m++) {
+		MeshData mesh = meshes[m];
+		for (int i = 0; i < mesh.NTriangles; i++) {
+			off_string += "3 " + std::to_string(cumulVert + mesh.triangles[i].y) + " " + std::to_string(cumulVert + mesh.triangles[i].x) + " " + std::to_string(cumulVert + mesh.triangles[i].z) + "\n";
+		}
+		cumulVert += mesh.NVertices;
+	}
+	return off_string;
+}
+
+
+void mesh_to_off_file(const std::string &fileName, std::vector<MeshData> &meshes) {
+	FILE *fptr;
+	if ((fptr = fopen(fileName.c_str(), "w")) == NULL) {
+		fprintf(stderr, "Failed to open output file\n");
+		exit(-1);
+	}
+	fprintf(fptr, "OFF\n");
+	fprintf(fptr, "%d %d 0\n", meshes[0].NVertices, meshes[0].NTriangles);
+	unsigned int cumulVert = 0;
+	for (int m = 0; m < meshes.size(); m++) {
+		MeshData mesh = meshes[m];
+		for (int i = 0; i < mesh.NVertices; i++) {
+			float3 vert = mesh.vertices[i];
+			fprintf(fptr, "%.3f %.3f %.3f\n", vert.x, vert.y, vert.z);
+		}
+	}
+	for (int m = 0; m < meshes.size(); m++) {
+		MeshData mesh = meshes[m];
+		for (int i = 0; i < mesh.NTriangles; i++) {
+			fprintf(fptr, "3 %d %d %d\n", cumulVert + mesh.triangles[i].y, cumulVert + mesh.triangles[i].x, cumulVert + mesh.triangles[i].z);
+		}
+		cumulVert += mesh.NVertices;
+	}
+	fclose(fptr);
+}
+
