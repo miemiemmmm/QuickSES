@@ -1,6 +1,11 @@
 # SiESTA-Surf
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/708106751.svg)](https://zenodo.org/doi/10.5281/zenodo.10252504)
+
 <img src="Images/SiESTA-Surf_LOGO.png" style="">
+
+
 
 # ⚠️ NOTE: This repository is still under construction. Please use it with caution. ⚠️
 
@@ -24,7 +29,7 @@ $ pip install siesta-surf
 
 ### Install from Source distribution
 ```bash
-$ wget http://www.placeholder/for/url/to/siesta-surf-0.0.1.tar.gz
+$ wget https://github.com/miemiemmmm/SiESTA/releases/download/v0.0.1/siesta-surf-v0.0.1.tar.gz
 $ pip install -v siesta-surf-0.0.1.tar.gz 
 ```
 
@@ -39,14 +44,13 @@ $ make install
 ## Quick test
 ```bash
 $ wget https://files.rcsb.org/download/4bso.pdb
-$ python3 -c """import siesta as sst; 
-xyzr = sst.pdb_to_xyzr('4bso.pdb'); 
-print('Test1: Converted PDB to XYZR array: ', xyzr.shape);
-sst.pdb_to_file('4bso.pdb', '4bso_pysurf.obj', format='obj', grid_size=0.5);
+$ python3 -c """import siesta; 
+xyzr = siesta.pdb_to_xyzr('4bso.pdb'); print('Test1: Converted PDB to XYZR array: ', type(xyzr), xyzr.shape);
+siesta.pdb_to_file('4bso.pdb', '4bso_pysurf.obj', format='obj', grid_size=0.3);
 print('Test2: Surface mesh saved to 4bso_pysurf.obj');
-ply_str = sst.pdb_to_string('4bso.pdb'); 
-print('Test3: First 400 characters from the result PLY string: '); print(ply_str[:200], '......\n');
-sst.xyzr_to_file(xyzr, '4bso_pysurf.ply', format='ply', grid_size=0.2);
+ply_str = siesta.pdb_to_string('4bso.pdb'); 
+print('Test3: Generated the surface mesh string from PDB file: ', len(ply_str), [ply for ply in ply_str.split('\n') if 'element' in ply]) 
+siesta.xyzr_to_file(xyzr, '4bso_pysurf.ply', format='ply', grid_size=0.25);
 print('Test4: Surface mesh computed from the previously computed XYZR array saved to 4bso_pysurf.ply');
 """ 
 # QuickSES console program
@@ -65,90 +69,70 @@ You could also directly convert it to 3D surface triangle mesh. Currently suppor
 
 Current available functions:
 ----------------------------------------------------------------
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_xyzr(pdb_file_name:str) -> np.ndarray
-</h4>
-<span>Compute the xyzr array from pdb file</span><br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <span>pdb_file_name: str </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>xyzr: np.ndarray shaped (N,4)</span>
-</div>
+
+> #### siesta.pdb_to_xyzr(pdb_file_name:str) -> np.ndarray
+Compute the xyzr array from pdb file
+##### Parameters:
+- pdb_file_name: str
+##### Returns:
+- xyzr: np.ndarray shaped (N,4)
 
 #### The following surface generation functions accept "grid_size", "smooth_step", "slice_number" as optional arguments to control the quality of mesh.
 
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_file(pdb_file_name:str, output_file_name:str, format:str='ply') -> None
-</h4>
-<span>Generate the surface to file from pdb file</span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
-    <span style="margin-left: 100px; ">pdb_file_name: str </span> <br>
-    <span style="margin-left: 100px; ">output_file_name: str </span> <br>
-    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>None</span>
-</div>
+> #### siesta.pdb_to_file(pdb_file_name:str, output_file_name:str, format:str='ply') -> None
+Generate the surface to file from pdb file
+##### Parameters:
+- pdb_file_name: str
+- output_file_name: str
+- format: str, optional, default: 'ply'
+##### Returns:
+- None
 
+> #### siesta.pdb_to_string(pdb_file_name:str, format:str='ply') -> str
+Get the string of surface mesh from pdb file
+##### Parameters:
+- pdb_file_name: str
+- format: str, optional, default: 'ply'
+##### Returns: surface_string: str
+- surface_string: str
 
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_string(pdb_file_name:str, format:str='ply') -> str
-</h4>
-<span>Get the string of surface mesh from pdb file</span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
-    <span style="margin-left: 100px; ">pdb_file_name: str </span> <br>
-    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>surface_string: str</span>
-</div>
+> #### siesta.pdb_to_surf(pdb_file_name:str) -> tuple(vertices, faces)
+Compute the vertices and faces from pdb file
+##### Parameters:
+- pdb_file_name: str
+##### Returns:
+- surface_tuple: tuple(vertices, faces)
 
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.pdb_to_surf(pdb_file_name:str)
-</h4>
-<span>Generate the surface mesh from pdb file</span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <span>pdb_file_name: str </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>tuple(vertices, faces)</span>
-</div>
+> #### siesta.xyzr_to_file(np.array xyzr, str output_file_name, format:str='ply') -> None 
+Generate the surface file from xyzr array
+##### Parameters:
+- xyzr: np.ndarray shaped (N,4)
+- output_file_name: str
+- format: str, optional, default: 'ply'
+##### Returns:
+- None
 
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px"> 
-    siesta.xyzr_to_file(np.array xyzr, str output_file_name, format:str='ply') -> None
-</h4>
-<span>Generate the surface file from xyzr array</span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
-    <span style="margin-left: 100px; ">xyzr: np.ndarray shaped (N,4) </span> <br>
-    <span style="margin-left: 100px; ">output_file_name: str </span> <br>
-    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>None</span>
-</div>
+> #### siesta.xyzr_to_string(np.array xyzr, format:str='ply') -> str
+Generate surface object as string from xyzr array
+##### Parameters:
+- xyzr: np.ndarray shaped (N,4)
+- format: str, optional, default: 'ply'
+##### Returns:
+- surface_string: str
 
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.xyzr_to_string(np.array xyzr, format:str='ply') -> str
-</h4>
-<span>Generate surface object as string from xyzr array</span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <br>
-    <span style="margin-left: 100px; ">xyzr: np.ndarray shaped (N,4) </span> <br> 
-    <span style="margin-left: 100px; ">format: str, optional, default: 'ply' </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>surface_string: str</span>
-</div>
-
-<div style="margin-bottom: 10px"> <h4 style="margin-bottom: 1px">
-    siesta.xyzr_to_surf(np.array xyzr) -> tuple(vertices, faces)
-</h4>
-<span>Compute the vertices and faces</span><br>
-<span style="font-weight: bold; margin-left: 50px; ">Parameters: </span> <span> xyzr: xyzr array shaped (N,4) </span> <br>
-<span style="font-weight: bold; margin-left: 50px; ">Returns: </span> <span>surface_tuple: tuple(vertices, faces)</span>
-</div>
-
+> #### siesta.xyzr_to_surf(np.array xyzr) -> tuple(vertices, faces)
+Compute the vertices and faces from xyzr array
+##### Parameters:
+- xyzr: np.ndarray shaped (N,4)
+##### Returns:
+- surface_tuple: tuple(vertices, faces)
 
 ----------------------------------------------------------------
-
-
-[//]: # (<span>&nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape &#40;N, 4&#41; to a string of surface mesh. The default output format is ply. </span>)
-[//]: # (&nbsp;&nbsp;&nbsp;&nbsp; Convert a numpy array with shape &#40;N, 4&#41; to a tuple containing the vertices shaped &#40;V, 3&#41; and faces &#40;F, 3&#41; of the surface mesh, )
-[//]: # (where V is the number of vertices and F is the number of faces. )
-
-
-
 
 ### QuickSES mini-program
 ```bash
 $ QuickSES -h   # view help
-$ QuickSES -i 4bso.pdb -o 4bso_pysurf.obj -v 0.2 
+$ QuickSES -i 4bso.pdb -o 4bso_surface.obj -v 0.2 
 ```
 The default resolution is set to 0.5 Å but can be changed at runtime using -v argument. 
 The size of the slice that defines how much memory QuickSES uses can be changed using -s argument.
@@ -163,7 +147,7 @@ If you have [Open3D](http://www.open3d.org/) installed in your python environmen
 
 ```bash
 $ viewobj -h  # view help
-$ viewobj 4bso_Surface.obj
+$ viewobj 4bso_surface.obj -w 1    # show the surface mesh as wireframe 
 ```
 
 Current supported format includes:
@@ -191,7 +175,5 @@ Check these links to cite the [QuickSES](https://hal.archives-ouvertes.fr/hal-02
 
 [Pybind11](https://github.com/pybind/pybind11) is used for wrapping C++/CUDA code to Python API.
 
-The [LOGO](Images/SiESTA-Surf_LOGO.png) is designed by [DALL·E 3](https://openai.com/dall-e-3). 
+The [LOGO](Images/SiESTA-Surf_LOGO.png) is designed by [DALL·E 3](https://openai.com/dall-e-3).
 
-## License
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

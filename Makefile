@@ -9,7 +9,7 @@
 #             -gencode=arch=compute_75,code=compute_75
 
 NVCC=nvcc
-NVCCFLAGS=-use_fast_math -O0 --compiler-options "-fPIC" -I. -DMEASURETIME=0
+NVCCFLAGS=-use_fast_math -O0 --compiler-options "-fPIC" -I. -DMEASURETIME=0 --std=c++17
 CUDARUNTIME=-I/usr/local/cuda/include/ -lcudart -L/usr/local/cuda/lib64/ -DMEASURETIME=0
 
 CC=g++

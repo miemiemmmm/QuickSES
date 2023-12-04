@@ -1,7 +1,6 @@
 import argparse
-import re
+import re, os
 # import sys
-# import os
 # from datetime import datetime
 # import functools
 
@@ -524,7 +523,9 @@ def view3d_runner():
 
   final_geometries = []
   for file in filelist:
-    if ".pdb" in file or ".mol2" in file:
+    if not os.path.exists(file):
+      raise Exception(f"File {file} does not exist.")
+    if ".pdb" in file or ".mol2" in file or ".sdf" in file:
       geometries = molecule_to_o3d(file)
       if settings.autonormal:
         for geo in geometries:
@@ -536,8 +537,10 @@ def view3d_runner():
         if np.array(mesh.triangles).shape[0] == 0:
           raise Exception("No face normals found in the ply file.")
       except:
+        # If failed to read as triangle mesh, try to read as point cloud
         mesh = o3d.io.read_point_cloud(file)
-      if settings.autonormal:
+      if settings.autonormal and isinstance(mesh, (o3d.geometry.TriangleMesh)):
+        # Compute the norm of triangle mesh if it is a triangle mesh
         mesh.compute_vertex_normals()
       mesh.paint_uniform_color([0.5,0.1,0.1])
       newgeo = return_geom(mesh, settings)
