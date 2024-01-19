@@ -8,13 +8,19 @@
 #             -gencode=arch=compute_75,code=sm_75 \
 #             -gencode=arch=compute_75,code=compute_75
 
+CUDA_HOME ?= /usr/local/cuda
+CUDA_COMPUTE_CAPABILITY ?= sm_80
+
+PYTHON_INC := $(shell python3 -c "import sysconfig; print(sysconfig.get_path('include'))")
+PYBIND_INC := $(shell python3 -c "import pybind11; print(pybind11.get_include())")
+
 NVCC=nvcc
-NVCCFLAGS=-use_fast_math -O0 --compiler-options "-fPIC" -I. -DMEASURETIME=0 --std=c++17
-CUDARUNTIME=-I/usr/local/cuda/include/ -lcudart -L/usr/local/cuda/lib64/ -DMEASURETIME=0
+NVCCFLAGS=-use_fast_math -O3 --compiler-options "-fPIC" -I. -DMEASURETIME=0 --std=c++17 -arch=$(CUDA_COMPUTE_CAPABILITY)
+CUDARUNTIME=-I$(CUDA_HOME)/include/ -lcudart -L$(CUDA_HOME)/lib64/ -DMEASURETIME=0
 
 CC=g++
-CFLAGS=-O0 -fPIC
-PYFLAGS=-I/home/yzhang/mamba/envs/mlenv/include/python3.9 -I.
+CFLAGS=-O3 -fPIC
+PYFLAGS=-I$(PYTHON_INC) -I. -I$(PYBIND_INC)
 
 # Using NVCC with pybind11 causes implicit failure
 QuickSES: CudaSurf.o cpdb/cpdb.o cpdb/utils.o SmoothMesh.o
@@ -49,4 +55,4 @@ test:
 	"""
 
 install:
-	make clean && python -m build && pip install --force-reinstall -v dist/siesta_surf-0.0.1-py3-none-any.whl
+	make clean && python -m build && pip install --force-reinstall -v dist/siesta_surf-0.0.2-py3-none-any.whl

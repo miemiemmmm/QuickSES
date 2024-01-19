@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "siesta-surf"  # as it would appear on PyPI
-version = "0.0.1"
+version = "0.0.2"
 description = "A Python package with C++ extension"
 authors = [
     {name = "Yang Zhang", email = "credo_zhang@163.com"},
@@ -15,6 +15,11 @@ dependencies = [
 requires-python = ">=3.7"
 readme = "README.md"
 license = {text = "MIT"}
+
+
+[project.urls]
+Homepage = "https://github.com/miemiemmmm/SiESTA"
+Releases = "https://github.com/miemiemmmm/SiESTA/releases"
 
 [tool.setuptools]
 include-package-data = true

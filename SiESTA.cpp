@@ -48,7 +48,7 @@ py::array_t<float> faces_to_array(std::vector<MeshData> &meshes){
 py::array_t<float> pdb_to_xyzr(std::string &pdb_file){
   std::map<char, float> radiusDic = {
     {'O', 1.52f}, {'C', 1.70f}, {'N', 1.55f},
-    {'H', 1.20f}, {'S', 2.27f}, {'P', 1.80f},
+    {'H', 1.20f}, {'S', 1.80f}, {'P', 1.80f},
     {'X', 1.40f}
   };
   pdb *Prot;

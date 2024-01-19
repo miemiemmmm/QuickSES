@@ -374,10 +374,13 @@ def getAtomNum(atom="", residue=""):
 
 
 def rotation_matrix_from_vectors(vec1, vec2):
-  """ Find the rotation matrix that aligns vec1 to vec2
-  :param vec1: A 3d "source" vector
-  :param vec2: A 3d "destination" vector
-  :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
+  """ 
+  Find the rotation matrix that aligns vec1 to vec2
+  Args: 
+    vec1: A 3d "source" vector
+    vec2: A 3d "destination" vector
+  Returns:
+    mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
   """
   a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
   v = np.cross(a, b)
@@ -410,13 +413,61 @@ def create_cylinder(start, end, radius=0.2, color=[0.4275, 0.2941, 0.0745]):
   cylinder.paint_uniform_color(color)
   
   direction = vec / length
-  rot = rotation_matrix_from_vectors([0, 0, 1], direction)  # Change to z-axis
-  cylinder.rotate(rot, center=[0, 0, 0])  # Rotate around the origin
+  if list(direction) != [0,0,1]:
+    rot = rotation_matrix_from_vectors([0, 0, 1], direction)  # Change to z-axis
+    cylinder.rotate(rot, center=[0, 0, 0])  # Rotate around the origin
   
   mid = (start + end) / 2
   cylinder.translate(mid - cylinder.get_center())
   cylinder.compute_vertex_normals()
   return cylinder
+
+
+def create_bounding_box(dims, origin=[0,0,0]):
+  boxpoints = np.array([
+    [0,0,0],
+    [dims[0],0,0],
+    [0, dims[1], 0],
+    [0,0,dims[2]],
+    [dims[0], dims[1], 0],
+    [dims[0], 0, dims[2]],
+    [0, dims[1], dims[2]],
+    [dims[0], dims[1], dims[2]],
+  ])
+  if origin != [0,0,0]:
+    boxpoints += np.asarray(origin)
+  lines = [
+    [0,1], [0,2], [0,3], [1,4],
+    [1,5], [2,4], [2,6], [3,5],
+    [3,6], [4,7], [5,7], [6,7],
+  ]
+  ret = []
+  for line in lines:
+    cylinder = create_cylinder(boxpoints[line[0]], boxpoints[line[1]], radius=0.1, color=[0,0,1])
+    cylinder.compute_vertex_normals()
+    ret.append(cylinder)
+  return ret
+
+
+def traj_to_o3d(traj): 
+  atoms = list(traj.top.atoms)
+  residues = list(traj.top.residues)
+  coords = list(traj.xyz[0])
+  geometries = []
+  for idx, c in enumerate(coords):
+    theatom = atoms[idx]
+    resname = residues[theatom.resid].name
+    atomtype = getAtomNum(theatom.name, resname)
+    print(f"Atom Name: {theatom.name:8s} | Res Name: {resname:8s} | ---> {atomtype} |")
+    color = element_color_map.get(atomtype, [0.5,0.5,0.5])
+    geometries.append(create_sphere(c, radius=0.5, color=color))
+  for bond in list(traj.top.bonds):
+    n_i, n_j = bond.indices
+    pos_1 = coords[n_i]
+    pos_2 = coords[n_j]
+    if np.linalg.norm(pos_1 - pos_2) < 3:      # Simple condition to check if there is a bond
+      geometries.append(create_cylinder(pos_1, pos_2, radius=0.15))
+  return geometries
 
 
 def molecule_to_o3d(pdb_path):
