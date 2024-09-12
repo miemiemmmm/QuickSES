@@ -5,8 +5,6 @@
 
 <img src="Images/SiESTA-Surf_LOGO.png" style="">
 
-# ⚠️ NOTE: This repository is still under construction. Please use it with caution. ⚠️
-
 SiESTA-Surf is a Python API to utilizes CUDA for GPU-based computation of molecular solvent excluded surface (SES). 
 This repository is developed based on [QuickSES](https://github.com/nezix/QuickSES).
 It features a 3D uniform grid for constant-time access to atom neighbors and incorporates a CUDA-implemented Marching Cubes algorithm, as well as a GPU-based method for welding mesh vertices.
@@ -43,12 +41,12 @@ After installation, you can test the installation by running the following comma
 ```bash
 wget https://files.rcsb.org/download/4bso.pdb
 python3 -c """import siesta; 
-xyzr = siesta.pdb_to_xyzr('4bso.pdb'); print('Test1: Converted PDB to XYZR array: ', type(xyzr), xyzr.shape);
-siesta.pdb_to_file('4bso.pdb', '4bso_pysurf.obj', format='obj', grid_size=0.3);
+xyzr = siesta.pdb_to_xyzr('4bso.pdb'); print('Test1: Converted PDB to XYZR array: ', xyzr.shape);
+siesta.pdb_to_file('4bso.pdb', '4bso_pysurf.obj', output_format='obj', grid_size=0.3);
 print('Test2: Surface mesh saved to 4bso_pysurf.obj');
 ply_str = siesta.pdb_to_string('4bso.pdb'); 
 print('Test3: Generated the surface mesh string from PDB file: ', len(ply_str), [ply for ply in ply_str.split('\n') if 'element' in ply]) 
-siesta.xyzr_to_file(xyzr, '4bso_pysurf.ply', format='ply', grid_size=0.25);
+siesta.xyzr_to_file(xyzr, '4bso_pysurf.ply', output_format='ply', grid_size=0.25);
 print('Test4: Surface mesh computed from the previously computed XYZR array saved to 4bso_pysurf.ply');
 """ 
 # QuickSES console program
