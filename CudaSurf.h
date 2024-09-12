@@ -68,13 +68,16 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
     }
 }
 
-#ifndef INCLUDED_MAIN
-#define INCLUDED_MAIN
-
-
-std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsigned int N, float resoSES, int doSmoothing);
-std::vector<MeshData> get_mesh_by_xyzr(float *ptr, int N, int M, float grid_spacing=0.2, int smooth_steps = 10, int slice_size = 800);
-#endif
+void initRadiusDic() {
+    float factor = 1.0f;
+    radiusDic['O'] = 1.52f * factor;
+    radiusDic['C'] = 1.70f * factor;
+    radiusDic['N'] = 1.55f * factor;
+    radiusDic['H'] = 1.20f * factor;
+    radiusDic['S'] = 1.80f * factor;
+    radiusDic['P'] = 1.80f * factor;
+    radiusDic['X'] = 1.40f * factor;
+}
 
 extern "C" {
 
