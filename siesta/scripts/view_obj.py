@@ -1,5 +1,5 @@
 import argparse
-import re, os
+import re, os, json
 # import sys
 # from datetime import datetime
 # import functools
@@ -559,8 +559,11 @@ def view3d_parser():
   parser.add_argument('-w', '--wireframe', type=int, default=0, help='Whether or not to use lines instead of triangles')
   parser.add_argument('-n', '--autonormal', type=int, default=1, help='Whether or not to use the normals from the mesh file')
   parser.add_argument('-cmap', '--color_map', type=str, default=None, help='Color map to use for the mesh')
-  parser.add_argument('-d', '--debug', type=int, default=0, help='Whether or not to use the normals from the mesh file')
   args, other_args = parser.parse_known_args()
+
+  if len(other_args) == 0:
+    raise Exception("No files provided to render.")
+  
   return (args, other_args)
 
 
@@ -568,9 +571,11 @@ def view3d_runner():
   # Supported MolFormat: pdb, sdf, mol2
   # Supported ObjFormat: pcd, obj, ply, off, xyzr
   settings, filelist = view3d_parser()
-  if settings.debug:
-    print("The following files will be rendered: \n", filelist, "\n")
-    print("With the following configurations: \n", settings, "\n")
+  print("The following files will be rendered: ")
+  for file in filelist:
+    print(file)
+  print("Rendering configuration: ")
+  print(json.dumps(vars(settings), indent=4))
 
   final_geometries = []
   for file in filelist:

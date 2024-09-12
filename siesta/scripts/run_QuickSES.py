@@ -10,6 +10,9 @@ def parse_for_quickses():
 	parser.add_argument("-v", "--voxel", default=0.5, type=float, help="Voxel size in Angstrom. Defines the quality of the mesh")
 	parser.add_argument("-s", "--slice", default=300, type=int, help="Size of the sub-grid. Defines the quantity of GPU memory needed")
 	parser.add_argument("-d", "--debug", default=False, type=bool, help="Print debug information")
+	args = parser.parse_args()
+	if not args.output.endswith(".obj"):
+		raise Exception("Output file must be an OBJ file")
 	return parser.parse_args()
 
 
@@ -37,13 +40,15 @@ def quickses_runner():
 		command += ["-v", str(args.voxel)]
 	if args.slice:
 		command += ["-s", str(args.slice)]
-	if args.debug:
-		print("Final command: ", " ".join(command))
+
+	print("Final command: ", " ".join(command))
 
 	# Run QuickSES
 	subprocess.run(command)
-	if args.debug:
-		print("############# QuickSES finished successfully ##############")
-
-	return 0
+	if os.path.exists(args.output):
+		print(">>> QuickSES finished successfully ")
+		return 1
+	else:
+		print(">>> QuickSES failed")
+		return 0
 

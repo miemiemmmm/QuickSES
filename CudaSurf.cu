@@ -21,21 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "cuda_runtime.h"
 
-// includes
-#include <stdlib.h>
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
-#include <sstream>
-#include <iterator>
-#include <memory>
-#include <map>
-
-// #include <cassert>
 #include <fstream>
 #include <algorithm>
 #include <cctype>
@@ -77,6 +63,17 @@ int laplacianSmoothSteps = 1;
 string outputFilePath = "output.obj";
 string inputFilePath = "";
 bool weldVertices = true;
+
+void initRadiusDic() {
+    float factor = 1.0f;
+    radiusDic['O'] = 1.52f * factor;
+    radiusDic['C'] = 1.70f * factor;
+    radiusDic['N'] = 1.55f * factor;
+    radiusDic['H'] = 1.20f * factor;
+    radiusDic['S'] = 1.80f * factor;
+    radiusDic['P'] = 1.80f * factor;
+    radiusDic['X'] = 1.40f * factor;
+}
 
 unsigned int getMinMax(chain *C, float3 *minVal, float3 *maxVal, float *maxAtom)
 {
@@ -181,8 +178,6 @@ void getMinMax(float3 *positions, float *radii, unsigned int N, float3 *minVal, 
     *maxVal = vmax;
 }
 
-float4 *getArrayAtomPosRad(chain *C, unsigned int N)
-{
 
 float4 *getArrayAtomPosRad(chain *C, unsigned int N) {
     float4 *result = new float4[N];
@@ -368,8 +363,6 @@ void writeToObj(const string &fileName, const MeshData &mesh) {
     std::cerr << "Time for writting " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
 #endif
 }
-void writeToObj(const string &fileName, std::vector<MeshData> meshes) {
-
 
 void writeToObj(const string &fileName, std::vector<MeshData> meshes) {
 #if MEASURETIME
@@ -512,7 +505,7 @@ MeshData computeMarchingCubes(int3 sliceGridSESDim, int cutMC, int sliceNbCellSE
 
         gpuErrchk(cudaPeekAtLastError());
 
-        cerr << "MC allocation = " << memAlloc / 1000000.0f << " Mo" << endl;
+        // cerr << "MC allocation = " << memAlloc / 1000000.0f << " Mo" << endl;
 
         int Ntriangles = totalVerts / 3;
 
@@ -693,12 +686,12 @@ std::vector<MeshData> computeSlicedSES(float3 positions[], float radii[], unsign
 
     gpuErrchk(cudaPeekAtLastError());
 
-    cerr << "Allocating " << (((sizeof(int) + sizeof(float)) * sliceNbCellSES + 3 * sizeof(int) * sliceNbCellSES) + 2 * sizeof(float4) * N + sizeof(int2) * N + sizeof(int2) * nbcellsNeighbor) / 1000000.0f << " Mo" << endl;
+    // cerr << "Allocating " << (((sizeof(int) + sizeof(float)) * sliceNbCellSES + 3 * sizeof(int) * sliceNbCellSES) + 2 * sizeof(float4) * N + sizeof(int2) * N + sizeof(int2) * nbcellsNeighbor) / 1000000.0f << " Mo" << endl;
 
     int3 offset = {0, 0, 0};
     int cut = 8;
 
-    cerr << "Full size grid = " << gridSESSize << " x " << gridSESSize << " x " << gridSESSize << endl;
+    // cerr << "Full size grid = " << gridSESSize << " x " << gridSESSize << " x " << gridSESSize << endl;
     // cudaEventRecord(start);
     // for (int slice = 0; slice < gridSESSize; slice += sliceSmallSize) {
     for (int i = 0; i < gridSESSize; i += sliceSmallSize)

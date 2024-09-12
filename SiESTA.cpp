@@ -154,7 +154,7 @@ void pdb_to_file(std::string &pdb_file, std::string &out_file, std::string &form
 }
 
 
-PYBIND11_MODULE(siesta, m) {
+PYBIND11_MODULE(siesta_src, m) {
   m.def("pdb_to_xyzr",
     &pdb_to_xyzr,
     py::arg("pdb_file")
